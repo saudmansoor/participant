@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Reading Performance Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0F1F3D;--coral:#E8604C;--gold:#F5A623;--green:#16A34A;--light:#F0F4FF;--gray:#6B7280;--border:#E5E7EB}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--light);min-height:100vh;padding:16px;color:var(--navy);-webkit-font-smoothing:antialiased;max-width:560px;margin:0 auto}
+
+.header{background:var(--navy);color:white;padding:20px 22px;border-radius:14px;margin-bottom:14px;text-align:center}
+.header h1{font-size:18px;font-weight:800;letter-spacing:-0.3px;line-height:1.3}
+.header p{font-size:12px;color:#94A3B8;margin-top:4px}
+
+.card{background:white;border-radius:12px;margin-bottom:12px;box-shadow:0 1px 6px rgba(0,0,0,0.07);overflow:hidden}
+.card-hd{padding:16px 18px;display:flex;align-items:center;gap:12px}
+.cnum{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+.cnum.active{background:var(--coral);color:white}
+.cnum.done{background:var(--green);color:white}
+.ctitle{font-size:14px;font-weight:700;color:var(--navy);line-height:1.3}
+.csub{font-size:11px;color:var(--gray);margin-top:2px}
+.card-bd{padding:0 18px 18px}
+
+.unlock-btn{width:100%;padding:14px;border:2px dashed var(--coral);border-radius:10px;background:white;color:var(--coral);font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px}
+.unlock-btn:hover{background:#FFF5F4;border-style:solid}
+
+/* ── INPUTS ── */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.fg label{display:block;font-size:10px;font-weight:600;color:var(--gray);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px}
+.fg input{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;font-family:'Inter',sans-serif;color:var(--navy);background:#F9FAFB}
+.fg input:focus{outline:none;border-color:var(--navy);background:white}
+.fg.full{grid-column:1/-1}
+
+/* ── FREQUENCY TILES (Screen 1 Q2) ── */
+.freq-label{font-size:10px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px}
+.freq-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.freq-tile{padding:12px 8px;border-radius:10px;border:1.5px solid var(--border);background:#F9FAFB;cursor:pointer;text-align:center;transition:all 0.15s}
+.freq-tile .fe{display:block;font-size:20px;margin-bottom:4px}
+.freq-tile .ft{display:block;font-size:12px;font-weight:600;color:var(--navy)}
+.freq-tile .fs{display:block;font-size:10px;color:var(--gray);margin-top:2px}
+.freq-tile.sel{border-color:var(--coral);background:#FFF5F4}
+.freq-tile.sel .ft{color:var(--coral)}
+.freq-tile.sel .fs{color:var(--coral);opacity:0.8}
+
+/* ── UNDERSTANDING TILES ── */
+.qlbl{font-size:10px;font-weight:600;color:var(--gray);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:7px}
+.qrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:13px}
+.qb{padding:11px 4px 9px;border-radius:9px;border:1.5px solid var(--border);background:#F9FAFB;cursor:pointer;text-align:center;transition:all 0.15s}
+.qb .qe{display:block;font-size:18px}
+.qb .ql{display:block;font-size:10px;color:var(--gray);margin-top:3px;font-weight:500;line-height:1.3}
+.qb.sel{border-color:var(--coral);background:var(--coral)}
+.qb.sel .ql{color:white}
+
+/* ── BUTTONS ── */
+.btn{width:100%;padding:13px;border:none;border-radius:9px;font-size:14px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.2s}
+.btn-coral{background:var(--coral);color:white}
+.btn-coral:hover{background:#c94d3a}
+.btn-coral:disabled{background:#D1D5DB;color:#9CA3AF;cursor:not-allowed}
+.btn-green{background:var(--green);color:white}
+.btn-green:hover{background:#15803D}
+
+/* ── STAT TILES ── */
+.s2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.stile{background:#F9FAFB;border-radius:9px;padding:12px 8px;text-align:center;border:1.5px solid var(--border)}
+.stile .sv{font-size:18px;font-weight:800;color:var(--navy);line-height:1.2}
+.stile .sl{font-size:9px;color:var(--gray);margin-top:3px;text-transform:uppercase;letter-spacing:0.3px;line-height:1.3}
+.stile.coral{border-color:#FCA5A5;background:#FEF2F2}.stile.coral .sv{color:var(--coral)}
+.stile.green{border-color:#86EFAC;background:#F0FFF4}.stile.green .sv{color:var(--green)}
+.stile.gold{border-color:#FCD34D;background:#FFFBF0}.stile.gold .sv{color:#B45309}
+
+/* ── RESULT BOXES ── */
+.rbox{border-radius:10px;padding:14px;margin:10px 0}
+.rbox.green{background:#F0FFF4;border:1.5px solid #86EFAC}
+.rbox.gold{background:#FFFBF0;border:1.5px solid #FCD34D}
+.rbox.navy{background:var(--navy);color:white}
+.rbox.coral{background:#FEF2F2;border:1.5px solid #FCA5A5}
+.rbox-title{font-size:14px;font-weight:700;margin-bottom:8px}
+.rbox-title.green{color:#15803D}.rbox-title.gold{color:#B45309}.rbox-title.white{color:white}.rbox-title.coral{color:#DC2626}
+.rbox-body{font-size:13px;line-height:1.75;color:#374151}
+.rbox-body.white{color:rgba(255,255,255,0.85)}
+
+/* ── SAVED BOX ── */
+.saved-bold{background:#F0FFF4;border:2px solid var(--green);border-radius:10px;padding:14px;margin:10px 0;text-align:center}
+.saved-bold .sv{font-size:22px;font-weight:800;color:var(--green)}
+.saved-bold .sl{font-size:11px;color:var(--gray);margin-top:3px;text-transform:uppercase;letter-spacing:0.4px}
+
+/* ── BOLD STAT ── */
+.bold-stat{background:var(--navy);border-radius:12px;padding:18px;margin:10px 0;text-align:center}
+.bold-stat .bs-pct{font-size:40px;font-weight:800;color:var(--gold);line-height:1}
+.bold-stat .bs-lbl{font-size:10px;color:#94A3B8;margin-top:4px;text-transform:uppercase;letter-spacing:0.5px}
+.bold-stat .bs-meaning{font-size:14px;font-weight:600;color:white;margin-top:12px;line-height:1.7;padding:0 4px}
+.bold-stat .bs-hl{color:var(--gold);font-weight:800}
+
+/* ── BAR CHART ── */
+.chart{background:#F9FAFB;border-radius:10px;padding:14px;margin:10px 0;border:1.5px solid var(--border)}
+.chart-title{font-size:12px;font-weight:700;margin-bottom:10px;color:var(--navy)}
+.cleg{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.cl{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--gray)}
+.cld{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.cbody{display:flex;align-items:flex-end;gap:4px}
+.cyaxis{display:flex;flex-direction:column;justify-content:space-between;height:140px;padding-right:6px;font-size:9px;color:var(--gray);text-align:right;flex-shrink:0;min-width:28px}
+.cbars{display:flex;gap:20px;flex:1;align-items:flex-end;height:140px}
+.bgrp{display:flex;flex-direction:column;align-items:center;flex:1}
+.binner{display:flex;gap:5px;align-items:flex-end;height:130px}
+.bw{display:flex;flex-direction:column;align-items:center}
+.bv{font-size:9px;font-weight:700;color:var(--navy);margin-bottom:2px;text-align:center;white-space:nowrap}
+.b{width:26px;border-radius:4px 4px 0 0;min-height:4px}
+.bl{font-size:9px;color:var(--gray);margin-top:3px;text-align:center}
+.bn{font-size:11px;font-weight:700;margin-top:6px;color:var(--navy);text-align:center}
+.bpct{font-size:11px;font-weight:800;margin-top:3px;text-align:center}
+
+/* ── T4 ELEMENTS ── */
+.speed-block{border-radius:10px;padding:14px 16px;margin:10px 0}
+.speed-block.old{background:#FEF2F2;border:1.5px solid #FCA5A5}
+.speed-block.new{background:#F0FFF4;border:1.5px solid #86EFAC}
+.speed-block .sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px}
+.speed-block.old .sb-label{color:#DC2626}
+.speed-block.new .sb-label{color:#16A34A}
+.speed-block .sb-speed{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px}
+.speed-block .sb-stmt{font-size:14px;font-weight:600;color:#374151;line-height:1.7}
+.speed-block.new .sb-stmt{color:#15803D}
+
+/* ── CONGRATS ── */
+.congrats{background:var(--green);border-radius:10px;padding:16px;text-align:center;color:white;margin:12px 0}
+.congrats .cgt{font-size:22px;margin-bottom:6px}
+.congrats .cgb{font-size:13px;font-weight:700;line-height:1.6}
+
+/* ── OFFER / PITCH ── */
+.pitch{background:linear-gradient(135deg,#0F1F3D,#1E3A5F);border-radius:14px;padding:20px;color:white;text-align:center;margin-top:12px;box-shadow:0 4px 20px rgba(15,31,61,0.2)}
+.pitch .peye{font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
+.pitch .ptitle{font-size:22px;font-weight:800;margin-bottom:6px;line-height:1.3}
+.pitch .psub{font-size:12px;color:rgba(255,255,255,0.65);margin-bottom:14px;line-height:1.6}
+.pitch .pimg{width:100%;border-radius:10px;background:rgba(255,255,255,0.08);height:130px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:13px;color:rgba(255,255,255,0.35);border:1px dashed rgba(255,255,255,0.2)}
+.pitch .pcta{font-size:13px;color:rgba(255,255,255,0.8);line-height:1.7;margin-bottom:16px}
+.pitch .pcta strong{color:var(--gold)}
+.commit-btn{width:100%;padding:15px;background:var(--gold);color:var(--navy);border:none;border-radius:10px;font-size:14px;font-weight:800;font-family:'Inter',sans-serif;cursor:pointer;line-height:1.4;transition:all 0.2s}
+.commit-btn:hover{background:#e6961f}
+.committed-badge{background:#F0FFF4;border:2px solid var(--green);border-radius:10px;padding:14px;margin-top:12px;text-align:center}
+.committed-badge .cb-icon{font-size:28px;margin-bottom:6px}
+.committed-badge .cb-text{font-size:14px;font-weight:700;color:var(--green);line-height:1.5}
+
+/* ── TIMER BAR ── */
+.timer-bar-wrap{background:#F0F4FF;border-radius:8px;padding:10px 12px;margin-top:10px;display:flex;align-items:center;gap:10px}
+.timer-bar-track{flex:1;height:6px;background:#E5E7EB;border-radius:3px;overflow:hidden}
+.timer-bar-fill{height:100%;background:var(--coral);border-radius:3px;transition:width 1s linear}
+.timer-bar-label{font-size:10px;font-weight:600;color:var(--gray);white-space:nowrap}
+
+/* ── COMMENT BOX ── */
+.comment-box{background:#F0F4FF;border-radius:8px;padding:10px 12px;font-size:12px;color:#374151;margin-top:8px;line-height:1.6;border-left:3px solid var(--coral)}
+
+/* ── ERROR ── */
+.err{background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:8px;padding:10px 12px;font-size:12px;color:#DC2626;margin-bottom:10px;display:none}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 Reading Performance Tracker</h1>
+  <p>Track your reading growth in real time</p>
+</div>
+
+<div id="app"></div>
+
+<script>
+// ── CONFIG ──
+const GAS = 'https://script.google.com/macros/s/AKfycby_p9zXaWdHtsBfYo0eEmRipA8LSYfYWWyAtts8JbUoUuyExpO10Y197WBVmHHDmWjn/exec';
+const WPP = 250; // words per page average
+const T1C = '#94A3B8', T2C = '#60A5FA', T3C = '#16A34A';
+
+// Understanding options
+const U2 = [{e:'😐',l:'No change yet'},{e:'🙂',l:'Slightly better'},{e:'🔥',l:'Much better!'}];
+const U3 = [{e:'🙂',l:'Better than T2'},{e:'😊',l:'Clearly improving'},{e:'🤩',l:'Big difference!'}];
+
+// Frequency options
+const FREQ = [
+  {e:'📅',t:'Once',s:'1 day / week',v:1},
+  {e:'📅📅',t:'Twice',s:'2 days / week',v:2},
+  {e:'🔁',t:'Thrice',s:'3 days / week',v:3},
+  {e:'🔥',t:'Daily',s:'Every day',v:7}
+];
+
+// ── STATE ──
+let S = JSON.parse(localStorage.getItem('rts_v9') || 'null');
+let uSel = null;
+let freqSel = null;
+let open = {t2:false, t3:false, t4:false, t4res:false};
+let t2TimerDone = false;
+let pollInterval = null;
+
+// ── PERSISTENCE ──
+function save(){ localStorage.setItem('rts_v9', JSON.stringify(S)); }
+function push(){
+  if(!S) return;
+  fetch(GAS,{method:'POST',mode:'no-cors',body:JSON.stringify(S),headers:{'Content-Type':'text/plain'}}).catch(()=>{});
+}
+
+// ── FORMATTERS ──
+function fmtMins(m){
+  if(!m||m<=0) return '—';
+  m = Math.round(m);
+  if(m < 60) return m + (m===1?' minute':' minutes');
+  const h = Math.floor(m/60), mn = m%60;
+  if(mn===0) return h + (h===1?' hour':' hours');
+  return h+(h===1?' hour':' hours')+' '+mn+(mn===1?' min':' mins');
+}
+function fmtSecs(s){
+  s = Math.round(s);
+  if(s < 60) return s + ' seconds';
+  const m = Math.floor(s/60), sc = s%60;
+  if(sc===0) return m+(m===1?' minute':' minutes');
+  return m+(m===1?' minute':' minutes')+' '+sc+' secs';
+}
+function fmtWeeks(totalMins, daysPerWeek, minsPerSession){
+  const sessionsNeeded = totalMins / minsPerSession;
+  const weeksNeeded = sessionsNeeded / daysPerWeek;
+  if(weeksNeeded < 1) return 'less than a week';
+  if(weeksNeeded < 4) return Math.ceil(weeksNeeded) + (Math.ceil(weeksNeeded)===1?' week':' weeks');
+  const months = weeksNeeded / 4.3;
+  if(months < 1) return 'about a month';
+  return Math.ceil(months) + (Math.ceil(months)===1?' month':' months');
+}
+function bt(wpm,pages){ return (pages*WPP)/wpm; }
+function gr(a,b){ return Math.round(((b-a)/a)*100); }
+function mx(a,b){ return (b/a).toFixed(1); }
+
+// ── T1 SPEED COMMENT ──
+function t1Comment(wpm){
+  if(wpm < 120) return '💡 Most readers average 150–200 wpm. There is massive room to grow here — and that is exactly what we are here for.';
+  if(wpm < 200) return '📖 This is a common starting point. Watch closely — what happens next will surprise you.';
+  if(wpm < 300) return '👏 Solid baseline. You already read faster than most. Now let\'s see how much further we can take this.';
+  return '🚀 You\'re already a strong reader! Let\'s see how much more we can unlock today.';
+}
+
+// ── UNDERSTANDING TILES ──
+function pickU(grp, val){
+  uSel = val;
+  document.querySelectorAll('.qb-'+grp).forEach((b,i) => b.classList.toggle('sel', i===val));
+}
+function ubts(grp, opts){
+  return opts.map((o,i) =>
+    '<div class="qb qb-'+grp+'" onclick="pickU(\''+grp+'\','+i+')">'+
+      '<span class="qe">'+o.e+'</span><span class="ql">'+o.l+'</span>'+
+    '</div>'
+  ).join('');
+}
+
+// ── FREQUENCY TILES ──
+function pickFreq(val){
+  freqSel = val;
+  document.querySelectorAll('.freq-tile').forEach(t => {
+    const selected = parseInt(t.dataset.val) === val;
+    t.classList.toggle('sel', selected);
+  });
+}
+
+// ── HELPERS ──
+function showErr(id, msg){
+  const el = document.getElementById(id);
+  if(el){ el.style.display='block'; el.textContent='⚠️ '+msg; }
+}
+function setBtn(id, v){
+  const b = document.getElementById(id);
+  if(!b) return;
+  b.disabled = v;
+  b.textContent = v ? 'Saving...' : b.getAttribute('data-l');
+}
+function scrollToLast(){
+  setTimeout(()=>{
+    const cards = document.querySelectorAll('.card');
+    if(cards.length > 0) cards[cards.length-1].scrollIntoView({behavior:'smooth',block:'start'});
+  }, 120);
+}
+
+// ── BAR CHART ──
+function barChart(t1,t2,t3,name){
+  const maxWpm = Math.max(t1, t2||0, t3||0, 1);
+  const yVals  = [maxWpm, Math.round(maxWpm*.75), Math.round(maxWpm*.5), Math.round(maxWpm*.25), 0];
+  const h1 = Math.round((t1/maxWpm)*130);
+  const h2 = t2 ? Math.round((t2/maxWpm)*130) : 0;
+  const h3 = t3 ? Math.round((t3/maxWpm)*130) : 0;
+  const latest  = t3 || t2;
+  const gLabel  = latest ? (gr(t1,latest)>=0 ? '+'+gr(t1,latest)+'%' : gr(t1,latest)+'%') : '';
+  const gColor  = latest ? (gr(t1,latest)>=0 ? 'var(--green)' : 'var(--coral)') : 'var(--gray)';
+
+  return '<div class="chart">'+
+    '<div class="chart-title">📊 Speed Growth</div>'+
+    '<div class="cleg">'+
+      '<div class="cl"><div class="cld" style="background:'+T1C+'"></div>Test 1</div>'+
+      (t2?'<div class="cl"><div class="cld" style="background:'+T2C+'"></div>Test 2</div>':'')+
+      (t3?'<div class="cl"><div class="cld" style="background:'+T3C+'"></div>Test 3</div>':'')+
+    '</div>'+
+    '<div class="cbody">'+
+      '<div class="cyaxis">'+yVals.map(v=>'<span>'+v+'</span>').join('')+'</div>'+
+      '<div class="cbars">'+
+        '<div class="bgrp">'+
+          '<div class="binner">'+
+            '<div class="bw"><div class="bv">'+t1+'</div><div class="b" style="height:'+h1+'px;background:'+T1C+'"></div><div class="bl">T1</div></div>'+
+            (t2?'<div class="bw"><div class="bv">'+t2+'</div><div class="b" style="height:'+h2+'px;background:'+T2C+'"></div><div class="bl">T2</div></div>':'')+
+            (t3?'<div class="bw"><div class="bv">'+t3+'</div><div class="b" style="height:'+h3+'px;background:'+T3C+'"></div><div class="bl">T3</div></div>':'')+
+          '</div>'+
+          '<div class="bn">'+name+'</div>'+
+          '<div class="bpct" style="color:'+gColor+'">'+gLabel+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</div></div>';
+}
+
+// ── T2 AUTO-REVEAL TIMER (90 seconds) ──
+function startT2Timer(){
+  if(t2TimerDone || open.t2 || S.t2!=null) return;
+  const KEY = 'rts_v9_t1time';
+  const stored = localStorage.getItem(KEY);
+  const now = Date.now();
+  const t1Time = stored ? parseInt(stored) : now;
+  if(!stored) localStorage.setItem(KEY, now);
+
+  const DELAY = 90000; // 90 seconds
+  const elapsed = now - t1Time;
+  if(elapsed >= DELAY){
+    t2TimerDone = true;
+    render(); return;
+  }
+  const remaining = DELAY - elapsed;
+  const timerEl = document.getElementById('t2timer');
+  if(timerEl){
+    const pct = Math.min(100, (elapsed/DELAY)*100);
+    const fill = timerEl.querySelector('.timer-bar-fill');
+    const label = timerEl.querySelector('.timer-bar-label');
+    if(fill) fill.style.width = pct+'%';
+    if(label) label.textContent = Math.ceil((DELAY-elapsed)/1000)+'s';
+  }
+  setTimeout(()=>{
+    t2TimerDone = true;
+    render();
+  }, remaining);
+  // tick every second for progress bar
+  let tick = setInterval(()=>{
+    if(t2TimerDone || open.t2 || S.t2!=null){ clearInterval(tick); return; }
+    const el2 = document.getElementById('t2timer');
+    if(!el2){ clearInterval(tick); return; }
+    const e2 = Date.now() - t1Time;
+    const p2 = Math.min(100, (e2/DELAY)*100);
+    const f2 = el2.querySelector('.timer-bar-fill');
+    const l2 = el2.querySelector('.timer-bar-label');
+    if(f2) f2.style.width = p2+'%';
+    if(l2) l2.textContent = Math.ceil(Math.max(0,(DELAY-e2))/1000)+'s';
+  }, 1000);
+}
+
+// ── COACH UNLOCK POLLING (T3 & T4 via GAS) ──
+function startCoachPoll(){
+  if(pollInterval) return;
+  pollInterval = setInterval(async ()=>{
+    if(S==null) return;
+    try{
+      const res = await fetch(GAS+'?action=check_unlock&name='+encodeURIComponent(S.name), {mode:'cors'});
+      const data = await res.json();
+      let changed = false;
+      if(data.unlock_t3 && !open.t3 && S.t2!=null){ open.t3=true; changed=true; }
+      if(data.unlock_t4 && !open.t4 && S.t3!=null){ open.t4=true; changed=true; }
+      if(changed){ render(); scrollToLast(); }
+    } catch(e){}
+  }, 5000);
+}
+
+// ── ACTIONS ──
+function doSetup(){
+  const name  = document.getElementById('fn').value.trim();
+  const book  = document.getElementById('fb').value.trim();
+  const pages = parseInt(document.getElementById('fp').value);
+  const mins  = parseInt(document.getElementById('fm').value);
+  if(!name)             return showErr('e0','Please enter your name');
+  if(freqSel===null)    return showErr('e0','Please select how often you read');
+  if(!mins||isNaN(mins)) return showErr('e0','Please enter your average reading minutes');
+  if(!book)             return showErr('e0','Please enter your book title');
+  if(isNaN(pages)||pages<1) return showErr('e0','Please enter number of pages');
+  setBtn('b0',true);
+  S = {name, book, pages, readDays:freqSel, readMins:mins, t1:null, t2:null, t3:null, u2:null, u3:null};
+  save(); push(); render();
+}
+
+function doT1(){
+  const lines = parseInt(document.getElementById('fl1').value);
+  const wpl   = parseInt(document.getElementById('fw1').value);
+  if(isNaN(lines)||lines<1) return showErr('e1','Please enter lines read');
+  if(isNaN(wpl)||wpl<1)     return showErr('e1','Please enter words on first line');
+  setBtn('b1',true);
+  S.t1 = lines * wpl;
+  localStorage.setItem('rts_v9_t1time', Date.now());
+  save(); push(); render();
+  startT2Timer();
+  startCoachPoll();
+}
+
+function doT2(){
+  const lines = parseInt(document.getElementById('fl2').value);
+  const wpl   = parseInt(document.getElementById('fw2').value);
+  if(isNaN(lines)||lines<1)  return showErr('e2','Please enter lines read');
+  if(isNaN(wpl)||wpl<1)      return showErr('e2','Please enter words on first line');
+  if(uSel===null)             return showErr('e2','Please select your understanding level');
+  setBtn('b2',true);
+  S.t2 = lines*wpl; S.u2 = uSel; uSel=null;
+  save(); push(); render();
+}
+
+function doT3(){
+  const lines = parseInt(document.getElementById('fl3').value);
+  const wpl   = parseInt(document.getElementById('fw3').value);
+  if(isNaN(lines)||lines<1)  return showErr('e3','Please enter lines read');
+  if(isNaN(wpl)||wpl<1)      return showErr('e3','Please enter words on first line');
+  if(uSel===null)             return showErr('e3','Please select your understanding level');
+  setBtn('b3',true);
+  S.t3 = lines*wpl; S.u3 = uSel; uSel=null;
+  save(); push(); render();
+}
+
+function doCommit(){
+  S.committed = true;
+  save(); push(); render(); scrollToLast();
+}
+
+function openSec(sec){
+  open[sec] = true; uSel = null;
+  render(); scrollToLast();
+}
+
+// ── MAIN RENDER ──
+function render(){
+  const el = document.getElementById('app');
+  let html  = '';
+
+  // ════════════════════════════════
+  //  SCREEN 1 + 2 — SETUP
+  // ════════════════════════════════
+  if(!S){
+    html +=
+      '<div class="card">'+
+        '<div class="card-hd">'+
+          '<div class="cnum active">→</div>'+
+          '<div><div class="ctitle">Welcome! Let\'s get started.</div>'+
+          '<div class="csub">Tell us about yourself and your book.</div></div>'+
+        '</div>'+
+        '<div class="card-bd">'+
+          '<div id="e0" class="err"></div>'+
+
+          // Name
+          '<div class="frow">'+
+            '<div class="fg full"><label>Your Name</label>'+
+              '<input type="text" id="fn" placeholder="e.g. Harish"/>'+
+            '</div>'+
+          '</div>'+
+
+          // How often
+          '<div class="freq-label">How often do you read in a week?</div>'+
+          '<div class="freq-grid">'+
+            FREQ.map(f =>
+              '<div class="freq-tile" data-val="'+f.v+'" onclick="pickFreq('+f.v+')">'+
+                '<span class="fe">'+f.e+'</span>'+
+                '<span class="ft">'+f.t+'</span>'+
+                '<span class="fs">'+f.s+'</span>'+
+              '</div>'
+            ).join('')+
+          '</div>'+
+
+          // Minutes per session
+          '<div class="frow">'+
+            '<div class="fg full">'+
+              '<label>When you sit down to read, how many minutes do you read on average?</label>'+
+              '<input type="number" id="fm" placeholder="e.g. 30" min="1"/>'+
+            '</div>'+
+          '</div>'+
+
+          '<div style="height:1px;background:var(--border);margin:6px 0 14px"></div>'+
+
+          // Book details
+          '<div class="frow">'+
+            '<div class="fg full"><label>Name of the Book You Are Reading</label>'+
+              '<input type="text" id="fb" placeholder="e.g. Atomic Habits"/>'+
+            '</div>'+
+            '<div class="fg full"><label>How Many Pages Does It Have?</label>'+
+              '<input type="number" id="fp" placeholder="e.g. 320" min="1"/>'+
+            '</div>'+
+          '</div>'+
+
+          '<div style="background:#F0F4FF;border-radius:8px;padding:9px 12px;font-size:11px;color:var(--navy);margin-bottom:12px">'+
+            '📐 <strong>We will calculate your exact reading time</strong> based on what you enter.'+
+          '</div>'+
+
+          '<button class="btn btn-coral" id="b0" data-l="Let\'s Begin →" onclick="doSetup()">Let\'s Begin →</button>'+
+        '</div>'+
+      '</div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  // ════════════════════════════════
+  //  T1 — BASE READING SPEED
+  // ════════════════════════════════
+  const t1done = S.t1 != null;
+  html +=
+    '<div class="card">'+
+      '<div class="card-hd">'+
+        '<div class="cnum '+(t1done?'done':'active')+'">'+(t1done?'✓':'1')+'</div>'+
+        '<div>'+
+          '<div class="ctitle">Test 1 — Base Reading Speed</div>'+
+          '<div class="csub">'+(t1done?'✅ Completed — '+S.t1+' wpm':'Read for 1 minute. Then count your lines.')+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="card-bd">';
+
+  if(!t1done){
+    html +=
+      '<div id="e1" class="err"></div>'+
+      '<div class="frow">'+
+        '<div class="fg"><label>Lines Read in 1 Min</label>'+
+          '<input type="number" id="fl1" placeholder="e.g. 18" min="1"/>'+
+        '</div>'+
+        '<div class="fg"><label>Words on First Line</label>'+
+          '<input type="number" id="fw1" placeholder="e.g. 10" min="1"/>'+
+        '</div>'+
+      '</div>'+
+      '<button class="btn btn-coral" id="b1" data-l="✅ Submit Test 1" onclick="doT1()">✅ Submit Test 1</button>';
+  } else {
+    const t1h  = bt(S.t1, S.pages);
+    const fast = t1h < 60; // under 1 hour = fast reader
+
+    html +=
+      '<div class="rbox green">'+
+        '<div class="rbox-title green">📊 Your Baseline</div>'+
+        '<div class="s2">'+
+          '<div class="stile"><div class="sv">'+S.t1+' wpm</div><div class="sl">Reading Speed</div></div>'+
+          '<div class="stile coral"><div class="sv">'+fmtMins(t1h)+'</div><div class="sl">To Finish<br>'+S.book+'</div></div>'+
+        '</div>'+
+      '</div>'+
+
+      (fast
+        ? '<div class="comment-box">🚀 You already read faster than most people in the room. Let\'s see how much further we push this today.</div>'
+        : '<div class="comment-box">'+t1Comment(S.t1)+'</div>'
+      );
+
+    // T2 unlock — hidden until 90s timer or coach releases
+    if(S.t2==null && !open.t2){
+      if(t2TimerDone){
+        html += '<div style="margin-top:12px"><button class="unlock-btn" onclick="openSec(\'t2\')">🔓 Tap to start Test 2</button></div>';
+      } else {
+        // Show progress bar while waiting
+        const KEY = 'rts_v9_t1time';
+        const t1Time = parseInt(localStorage.getItem(KEY)||Date.now());
+        const elapsed = Date.now() - t1Time;
+        const pct = Math.min(100, (elapsed/90000)*100);
+        const remaining = Math.ceil(Math.max(0,(90000-elapsed))/1000);
+        html +=
+          '<div id="t2timer" class="timer-bar-wrap" style="margin-top:12px">'+
+            '<div class="timer-bar-track"><div class="timer-bar-fill" style="width:'+pct+'%"></div></div>'+
+            '<div class="timer-bar-label">'+remaining+'s</div>'+
+          '</div>';
+        // restart the timer if we just re-rendered
+        setTimeout(startT2Timer, 50);
+      }
+    }
+  }
+  html += '</div></div>';
+
+  // ════════════════════════════════
+  //  T2 — AFTER TECHNIQUE
+  // ════════════════════════════════
+  if(t1done && (S.t2!=null || open.t2)){
+    const t2done = S.t2 != null;
+    html +=
+      '<div class="card">'+
+        '<div class="card-hd">'+
+          '<div class="cnum '+(t2done?'done':'active')+'">'+(t2done?'✓':'2')+'</div>'+
+          '<div>'+
+            '<div class="ctitle">Test 2 — After the Technique</div>'+
+            '<div class="csub">'+(t2done?'✅ Completed — '+S.t2+' wpm':'Apply the technique. Read for 1 minute.')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="card-bd">';
+
+    if(!t2done){
+      html +=
+        '<div id="e2" class="err"></div>'+
+        '<div class="frow">'+
+          '<div class="fg"><label>Lines Read in 1 Min</label>'+
+            '<input type="number" id="fl2" placeholder="e.g. 22" min="1"/>'+
+          '</div>'+
+          '<div class="fg"><label>Words on First Line</label>'+
+            '<input type="number" id="fw2" placeholder="e.g. 10" min="1"/>'+
+          '</div>'+
+        '</div>'+
+        '<div class="qlbl">How is your understanding compared to Test 1?</div>'+
+        '<div class="qrow">'+ubts('u2',U2)+'</div>'+
+        '<button class="btn btn-coral" id="b2" data-l="✅ Submit Test 2" onclick="doT2()">✅ Submit Test 2</button>';
+    }
+
+    if(t2done){
+      const t1h  = bt(S.t1, S.pages);
+      const t2h  = bt(S.t2, S.pages);
+      const g12  = gr(S.t1, S.t2);
+      const imp  = S.t2 > S.t1;
+      const same = S.t2 === S.t1;
+      const ul   = S.u2!=null ? U2[S.u2].e+' '+U2[S.u2].l : '—';
+      const saved12 = t1h - t2h;
+      const newSecs12 = Math.round(60/(S.t2/S.t1));
+
+      if(same){
+        html += '<div class="rbox gold"><div class="rbox-title gold">Speed Held Steady</div>'+
+          '<div class="rbox-body">Your speed stayed the same — <strong>'+S.t1+' wpm</strong>. That is perfectly normal at this stage. The drills in Test 3 are where the real jump happens.</div></div>';
+      } else if(!imp){
+        html += '<div class="rbox coral"><div class="rbox-title coral">Slight Dip — Completely Normal</div>'+
+          '<div class="rbox-body">Speed went from <strong>'+S.t1+' → '+S.t2+' wpm</strong>. A small drop is completely normal as your brain adapts to the new technique. Watch what happens after the drills.</div></div>';
+      } else {
+        html +=
+          '<div class="rbox green"><div class="rbox-title green">📈 New Reading Speed</div>'+
+            '<div class="rbox-body">Speed went from <strong>'+S.t1+' → '+S.t2+' wpm</strong> — <strong>'+g12+'% faster!</strong></div>'+
+          '</div>';
+      }
+
+      html +=
+        barChart(S.t1, S.t2, null, S.name)+
+
+        '<div class="rbox navy">'+
+          '<div class="rbox-title white">⚡ What Does '+g12+'% Mean?</div>'+
+          '<div class="rbox-body white">'+
+            'The 1 minute content you read in Test 1 —<br>'+
+            'at your new speed you can now finish that same content in just<br>'+
+            '<strong style="font-size:20px;color:'+T2C+'">'+fmtSecs(newSecs12)+'</strong>'+
+          '</div>'+
+        '</div>'+
+
+        '<div class="rbox green">'+
+          '<div class="rbox-title green">📚 '+S.book+'</div>'+
+          '<div class="rbox-body">'+
+            'Before: finishing <strong>'+S.book+'</strong> would take <strong>'+fmtMins(t1h)+'</strong>.<br>'+
+            'Now: you can finish it in <strong>'+fmtMins(t2h)+'</strong>.'+
+          '</div>'+
+        '</div>'+
+
+        (saved12 > 0
+          ? '<div class="saved-bold"><div class="sv">'+fmtMins(saved12)+' saved</div><div class="sl">Time saved on this book</div></div>'
+          : '<div class="saved-bold" style="border-color:var(--gold);background:#FFFBF0"><div class="sv" style="color:#B45309">Keep going</div><div class="sl">Test 3 is where the big jump happens</div></div>'
+        )+
+
+        '<div style="background:#F0F4FF;border-radius:8px;padding:10px 12px;font-size:12px;color:#374151;margin-top:8px">'+
+          '🧠 Understanding: <strong>'+ul+'</strong>'+
+        '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  // T3 unlock — coach controlled (via GAS polling)
+  if(S.t2!=null && S.t3==null && !open.t3){
+    html += '<div class="card"><div class="card-bd" style="padding:16px 18px">'+
+      '<div style="text-align:center;padding:8px 0;font-size:12px;color:var(--gray)">⏳ Waiting for coach to start Test 3...</div>'+
+    '</div></div>';
+  }
+
+  // ════════════════════════════════
+  //  T3 — AFTER DRILLS
+  // ════════════════════════════════
+  if(S.t2!=null && (S.t3!=null || open.t3)){
+    const t3done = S.t3 != null;
+    html +=
+      '<div class="card">'+
+        '<div class="card-hd">'+
+          '<div class="cnum '+(t3done?'done':'active')+'">'+(t3done?'✓':'3')+'</div>'+
+          '<div>'+
+            '<div class="ctitle">Test 3 — After the Drills</div>'+
+            '<div class="csub">'+(t3done?'✅ Completed — '+S.t3+' wpm':'This is where it doubles. Read for 1 minute.')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="card-bd">';
+
+    if(!t3done){
+      html +=
+        '<div id="e3" class="err"></div>'+
+        '<div class="frow">'+
+          '<div class="fg"><label>Lines Read in 1 Min</label>'+
+            '<input type="number" id="fl3" placeholder="e.g. 28" min="1"/>'+
+          '</div>'+
+          '<div class="fg"><label>Words on First Line</label>'+
+            '<input type="number" id="fw3" placeholder="e.g. 10" min="1"/>'+
+          '</div>'+
+        '</div>'+
+        '<div class="qlbl">How is your understanding now?</div>'+
+        '<div class="qrow">'+ubts('u3',U3)+'</div>'+
+        '<button class="btn btn-coral" id="b3" data-l="✅ Submit Test 3" onclick="doT3()">✅ Submit Test 3</button>';
+    }
+
+    if(t3done){
+      const t1h  = bt(S.t1, S.pages);
+      const t3h  = bt(S.t3, S.pages);
+      const g13  = gr(S.t1, S.t3);
+      const g23  = gr(S.t2, S.t3);
+      const saved = t1h - t3h;
+      const multiplier = mx(S.t1, S.t3);
+      const ul3 = S.u3!=null ? U3[S.u3].e+' '+U3[S.u3].l : '—';
+      const newSecs13 = Math.round(60/(S.t3/S.t1));
+
+      // Handle T3 ≤ T2
+      let t3comment = '';
+      if(S.t3 < S.t2){
+        t3comment = '<div class="rbox gold"><div class="rbox-title gold">Still a Great Result</div>'+
+          '<div class="rbox-body">T3 came in slightly below T2 — but look at where you started. <strong>'+g13+'% improvement from your baseline</strong>. That is what matters.</div></div>';
+      } else if(S.t3 === S.t2){
+        t3comment = '<div class="rbox gold"><div class="rbox-title gold">Consistent Performance</div>'+
+          '<div class="rbox-body">Your speed held from T2 to T3. The technique has locked in — now it is about building consistency.</div></div>';
+      }
+
+      html +=
+        barChart(S.t1, S.t2, S.t3, S.name)+
+
+        (t3comment ? t3comment :
+          '<div class="bold-stat">'+
+            '<div class="bs-pct">+'+g13+'%</div>'+
+            '<div class="bs-lbl">Total Speed Improvement</div>'+
+            '<div class="bs-meaning">'+
+              'With your new reading speed of <span class="bs-hl">'+S.t3+' wpm</span>,<br>'+
+              'the 1 minute content from Test 1<br>'+
+              'you now finish in just<br>'+
+              '<span class="bs-hl" style="font-size:22px">'+fmtSecs(newSecs13)+'</span>'+
+            '</div>'+
+          '</div>'
+        )+
+
+        '<div class="rbox green">'+
+          '<div class="rbox-title green">📚 '+S.book+' — Before vs After</div>'+
+          '<div class="rbox-body">'+
+            'Initially it would take you <strong>'+fmtMins(t1h)+'</strong>.<br>'+
+            'With your new speed — <strong>'+multiplier+'x faster</strong> — it now takes just <strong>'+fmtMins(t3h)+'</strong>.<br><br>'+
+            '<strong style="color:var(--coral);font-size:15px">Total time saved — '+fmtMins(saved)+'</strong>'+
+          '</div>'+
+        '</div>'+
+
+        '<div style="background:#F0F4FF;border-radius:8px;padding:10px 12px;font-size:12px;color:#374151;margin-top:8px">'+
+          '🧠 Understanding: <strong>'+ul3+'</strong>'+
+        '</div>'+
+
+        // Offer teaser
+        '<div class="pitch" style="margin-top:14px">'+
+          '<div class="peye">🔥 Your Next Step</div>'+
+          '<div class="ptitle">Read to Implement</div>'+
+          '<div class="psub">From book buyer → book finisher → book implementer<br>14-Day Live Program with Saud</div>'+
+          '<div class="pimg">[Program image — replace this]</div>'+
+          '<div class="pcta">You just proved you can read faster.<br>Now imagine doing this <strong>consistently</strong> —<br>finishing books and <strong>actually using</strong> what you read.</div>'+
+        '</div>';
+    }
+    html += '</div></div>';
+  }
+
+  // T4 unlock — coach controlled
+  if(S.t3!=null && !open.t4){
+    html += '<div class="card"><div class="card-bd" style="padding:16px 18px">'+
+      '<div style="text-align:center;padding:8px 0;font-size:12px;color:var(--gray)">⏳ Waiting for coach to reveal your 7-day plan...</div>'+
+    '</div></div>';
+  }
+
+  // ════════════════════════════════
+  //  T4 — 7-DAY BOOK FINISHING PLAN
+  // ════════════════════════════════
+  if(S.t3!=null && open.t4){
+    const t1h       = bt(S.t1, S.pages);
+    const t3h       = bt(S.t3, S.pages);
+    const multiplier= mx(S.t1, S.t3);
+    const mpd_old   = t1h / 7;
+    const mpd_new   = t3h / 7;
+    // With old HABIT (days+mins), how long to finish at T1 speed?
+    const weeksOld  = fmtWeeks(t1h, S.readDays, S.readMins);
+    // With old HABIT but NEW speed, how long?
+    const weeksNew  = fmtWeeks(t3h, S.readDays, S.readMins);
+
+    html +=
+      '<div class="card">'+
+        '<div class="card-hd">'+
+          '<div class="cnum active">🎯</div>'+
+          '<div>'+
+            '<div class="ctitle">Your 7-Day Book Finishing Plan</div>'+
+            '<div class="csub">Let\'s look at your real reading reality.</div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="card-bd">';
+
+    if(!open.t4res){
+      html +=
+        '<div style="font-size:15px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:16px;line-height:1.6">'+
+          'Are you ready to discover<br>how to finish <strong style="color:var(--coral)">'+S.book+'</strong><br>in just 7 days? 🎯'+
+        '</div>'+
+        '<button class="yes-btn btn btn-green" onclick="openSec(\'t4res\')">✅ Yes, show me my plan!</button>';
+    } else {
+      html +=
+        // Old habit — old speed
+        '<div class="speed-block old">'+
+          '<div class="sb-label">📅 Your Old Reading Habit</div>'+
+          '<div class="sb-speed">'+S.readDays+'x/week · '+S.readMins+' mins/session · '+S.t1+' wpm</div>'+
+          '<div class="sb-stmt">At this pace, finishing <strong>'+S.book+'</strong> would take you <strong>'+weeksOld+'</strong>.</div>'+
+        '</div>'+
+
+        // New speed — old habit
+        '<div class="rbox gold">'+
+          '<div class="rbox-title gold">⚡ Same Habit. New Speed.</div>'+
+          '<div class="rbox-body">'+
+            'With your <strong>new reading speed of '+S.t3+' wpm</strong> but the <em>same reading habit</em>, <strong>'+S.book+'</strong> would now take just <strong>'+weeksNew+'</strong>.<br><br>'+
+            'That alone is <strong>'+multiplier+'x faster</strong> than before.'+
+          '</div>'+
+        '</div>'+
+
+        // 7-day plan
+        '<div class="speed-block new">'+
+          '<div class="sb-label">🚀 The 7-Day System</div>'+
+          '<div class="sb-speed">'+S.t3+' wpm — '+multiplier+'x faster than before</div>'+
+          '<div class="sb-stmt">Follow the right system and all you need is <strong>'+fmtMins(mpd_new)+'</strong> of focused reading every day — and you finish <strong>'+S.book+'</strong> in 7 days.</div>'+
+        '</div>'+
+
+        '<div class="congrats">'+
+          '<div class="cgt">🎉 Congratulations, '+S.name+'!</div>'+
+          '<div class="cgb">Same book. New speed. New system.<br>Finished in 7 days — just <strong>'+fmtMins(mpd_new)+' a day.</strong></div>'+
+        '</div>'+
+
+        // Offer + Commitment
+        (S.committed
+          ? '<div class="committed-badge">'+
+              '<div class="cb-icon">🔥</div>'+
+              '<div class="cb-text">You are committed.<br>Saud will share the special offer with you now.</div>'+
+            '</div>'
+          : '<div class="pitch">'+
+              '<div class="peye">🔥 Special Offer — Action Takers Only</div>'+
+              '<div class="ptitle">Read to Implement</div>'+
+              '<div class="psub">14-Day Live Program · From Book Buyer to Book Implementer</div>'+
+              '<div class="pimg">[Program image — replace this]</div>'+
+              '<div class="pcta">You have just seen what is possible.<br>Imagine doing this for <strong>every book</strong>, consistently —<br>reading faster, finishing books, and <strong>actually implementing the ideas</strong>.<br><br>'+
+                'If you are serious, go ahead and tap the button.<br><strong>Saud will share a special offer with you today.</strong>'+
+              '</div>'+
+              '<button class="commit-btn" onclick="doCommit()">✅ I Am Committed to Taking Action<br><small style="font-size:11px;font-weight:600;opacity:0.8">Special offer for action takers today</small></button>'+
+            '</div>'
+        );
+    }
+
+    html += '</div></div>';
+  }
+
+  el.innerHTML = html;
+
+  // re-attach frequency tile selections after re-render
+  if(!S && freqSel!==null){
+    document.querySelectorAll('.freq-tile').forEach(t => {
+      if(parseInt(t.dataset.val)===freqSel) t.classList.add('sel');
+    });
+  }
+
+  // restart timer progress bar if visible
+  if(S && S.t1!=null && S.t2==null && !open.t2 && !t2TimerDone){
+    setTimeout(startT2Timer, 50);
+  }
+  // keep polling coach
+  if(S && S.t1!=null) startCoachPoll();
+}
+
+// Extend openSec to handle 't4res'
+const _openSecOrig = openSec;
+function openSec(sec){
+  if(sec==='t4res'){ open.t4res=true; render(); scrollToLast(); return; }
+  open[sec]=true; uSel=null;
+  render(); scrollToLast();
+}
+
+render();
+</script>
+</body>
+</html>
