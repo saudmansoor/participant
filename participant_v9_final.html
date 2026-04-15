@@ -141,11 +141,7 @@ body{font-family:'Inter',sans-serif;background:var(--light);min-height:100vh;pad
 .committed-badge .cb-icon{font-size:28px;margin-bottom:6px}
 .committed-badge .cb-text{font-size:14px;font-weight:700;color:var(--green);line-height:1.5}
 
-/* ── TIMER BAR ── */
-.timer-bar-wrap{background:#F0F4FF;border-radius:8px;padding:10px 12px;margin-top:10px;display:flex;align-items:center;gap:10px}
-.timer-bar-track{flex:1;height:6px;background:#E5E7EB;border-radius:3px;overflow:hidden}
-.timer-bar-fill{height:100%;background:var(--coral);border-radius:3px;transition:width 1s linear}
-.timer-bar-label{font-size:10px;font-weight:600;color:var(--gray);white-space:nowrap}
+
 
 /* ── COMMENT BOX ── */
 .comment-box{background:#F0F4FF;border-radius:8px;padding:10px 12px;font-size:12px;color:#374151;margin-top:8px;line-height:1.6;border-left:3px solid var(--coral)}
@@ -186,7 +182,6 @@ let S = JSON.parse(localStorage.getItem('rts_v9') || 'null');
 let uSel = null;
 let freqSel = null;
 let open = {t2:false, t3:false, t4:false, t4res:false};
-let t2TimerDone = false;
 let pollInterval = null;
 
 // ── PERSISTENCE ──
@@ -307,47 +302,7 @@ function barChart(t1,t2,t3,name){
     '</div></div>';
 }
 
-// ── T2 AUTO-REVEAL TIMER (90 seconds) ──
-function startT2Timer(){
-  if(t2TimerDone || open.t2 || S.t2!=null) return;
-  const KEY = 'rts_v9_t1time';
-  const stored = localStorage.getItem(KEY);
-  const now = Date.now();
-  const t1Time = stored ? parseInt(stored) : now;
-  if(!stored) localStorage.setItem(KEY, now);
 
-  const DELAY = 90000; // 90 seconds
-  const elapsed = now - t1Time;
-  if(elapsed >= DELAY){
-    t2TimerDone = true;
-    render(); return;
-  }
-  const remaining = DELAY - elapsed;
-  const timerEl = document.getElementById('t2timer');
-  if(timerEl){
-    const pct = Math.min(100, (elapsed/DELAY)*100);
-    const fill = timerEl.querySelector('.timer-bar-fill');
-    const label = timerEl.querySelector('.timer-bar-label');
-    if(fill) fill.style.width = pct+'%';
-    if(label) label.textContent = Math.ceil((DELAY-elapsed)/1000)+'s';
-  }
-  setTimeout(()=>{
-    t2TimerDone = true;
-    render();
-  }, remaining);
-  // tick every second for progress bar
-  let tick = setInterval(()=>{
-    if(t2TimerDone || open.t2 || S.t2!=null){ clearInterval(tick); return; }
-    const el2 = document.getElementById('t2timer');
-    if(!el2){ clearInterval(tick); return; }
-    const e2 = Date.now() - t1Time;
-    const p2 = Math.min(100, (e2/DELAY)*100);
-    const f2 = el2.querySelector('.timer-bar-fill');
-    const l2 = el2.querySelector('.timer-bar-label');
-    if(f2) f2.style.width = p2+'%';
-    if(l2) l2.textContent = Math.ceil(Math.max(0,(DELAY-e2))/1000)+'s';
-  }, 1000);
-}
 
 // ── COACH UNLOCK POLLING (T3 & T4 via GAS) ──
 function startCoachPoll(){
@@ -358,6 +313,7 @@ function startCoachPoll(){
       const res = await fetch(GAS+'?action=check_unlock&name='+encodeURIComponent(S.name), {mode:'cors'});
       const data = await res.json();
       let changed = false;
+      if(data.unlock_t2 && !open.t2 && S.t1!=null){ open.t2=true; changed=true; }
       if(data.unlock_t3 && !open.t3 && S.t2!=null){ open.t3=true; changed=true; }
       if(data.unlock_t4 && !open.t4 && S.t3!=null){ open.t4=true; changed=true; }
       if(changed){ render(); scrollToLast(); }
@@ -388,9 +344,7 @@ function doT1(){
   if(isNaN(wpl)||wpl<1)     return showErr('e1','Please enter words on first line');
   setBtn('b1',true);
   S.t1 = lines * wpl;
-  localStorage.setItem('rts_v9_t1time', Date.now());
   save(); push(); render();
-  startT2Timer();
   startCoachPoll();
 }
 
@@ -540,25 +494,9 @@ function render(){
         : '<div class="comment-box">'+t1Comment(S.t1)+'</div>'
       );
 
-    // T2 unlock — hidden until 90s timer or coach releases
+    // T2 unlock — coach controlled
     if(S.t2==null && !open.t2){
-      if(t2TimerDone){
-        html += '<div style="margin-top:12px"><button class="unlock-btn" onclick="openSec(\'t2\')">🔓 Tap to start Test 2</button></div>';
-      } else {
-        // Show progress bar while waiting
-        const KEY = 'rts_v9_t1time';
-        const t1Time = parseInt(localStorage.getItem(KEY)||Date.now());
-        const elapsed = Date.now() - t1Time;
-        const pct = Math.min(100, (elapsed/90000)*100);
-        const remaining = Math.ceil(Math.max(0,(90000-elapsed))/1000);
-        html +=
-          '<div id="t2timer" class="timer-bar-wrap" style="margin-top:12px">'+
-            '<div class="timer-bar-track"><div class="timer-bar-fill" style="width:'+pct+'%"></div></div>'+
-            '<div class="timer-bar-label">'+remaining+'s</div>'+
-          '</div>';
-        // restart the timer if we just re-rendered
-        setTimeout(startT2Timer, 50);
-      }
+      html += '<div style="margin-top:12px;text-align:center;padding:8px 0;font-size:12px;color:var(--gray)">⏳ Waiting for coach to start Test 2...</div>';
     }
   }
   html += '</div></div>';
@@ -849,10 +787,6 @@ function render(){
     });
   }
 
-  // restart timer progress bar if visible
-  if(S && S.t1!=null && S.t2==null && !open.t2 && !t2TimerDone){
-    setTimeout(startT2Timer, 50);
-  }
   // keep polling coach
   if(S && S.t1!=null) startCoachPoll();
 }
