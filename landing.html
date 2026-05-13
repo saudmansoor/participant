@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Find Your Book Finish Time · Read With Saud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Open Sans',sans-serif;background:#0e0d0b;color:#f0ede6;min-height:100vh;overflow-x:hidden;}
+.w{max-width:500px;margin:0 auto;padding:0 20px;}
+.hero{padding:28px 20px 0;max-width:500px;margin:0 auto;text-align:center;}
+.hero-hook{font-family:'Oswald',sans-serif;font-size:clamp(24px,6.5vw,32px);font-weight:700;color:#fff;line-height:1.3;margin-bottom:8px;}
+.hero-hook span{color:#c8b477;}
+.hero-sub{font-size:clamp(14px,3.8vw,16px);color:#999;line-height:1.6;margin-bottom:20px;}
+.btn-main{display:block;width:100%;padding:18px;background:#1e8c3a;color:#fff;font-family:'Oswald',sans-serif;font-size:clamp(17px,4.5vw,21px);font-weight:700;border:none;border-radius:12px;cursor:pointer;text-decoration:none;text-align:center;letter-spacing:.4px;box-shadow:0 6px 0 #0f5c22;line-height:1.25;margin-bottom:6px;}
+.btn-main:active{transform:translateY(3px);box-shadow:none;}
+@keyframes btnPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
+.btn-pulse{animation:btnPulse 3.5s infinite;}
+.btn-note{font-size:12px;color:#555;text-align:center;margin-bottom:24px;}
+.proof-bar{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:28px;flex-wrap:wrap;}
+.pb-item{font-size:12px;color:#666;}
+.pb-dot{width:4px;height:4px;border-radius:50%;background:#333;}
+.video-wrap{position:relative;width:75%;margin:0 auto;padding-bottom:calc(75% * 16/9);border-radius:12px;overflow:hidden;background:#111;cursor:pointer;margin-bottom:6px;}
+.video-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,180,119,.7);}70%{box-shadow:0 0 0 18px rgba(200,180,119,0);}100%{box-shadow:0 0 0 0 rgba(200,180,119,0);}}
+.play-btn{width:64px;height:64px;border-radius:50%;background:#c8b477;color:#1a1a1a;font-size:26px;display:flex;align-items:center;justify-content:center;padding-left:5px;font-weight:700;animation:pulse 2s infinite;}
+.play-label{font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;text-shadow:0 2px 6px rgba(0,0,0,.8);}
+.video-note{font-size:12px;color:#555;text-align:center;margin-bottom:24px;}
+.coach-img{width:100%;border-radius:12px;display:block;margin-bottom:6px;}
+.coach-note{font-size:12px;color:#666;text-align:center;margin-bottom:28px;}
+.section-label{font-family:'Oswald',sans-serif;font-size:clamp(18px,4.8vw,22px);font-weight:700;color:#fff;margin-bottom:14px;text-align:center;}
+.pain-list{display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.pain-item{display:flex;align-items:flex-start;gap:12px;background:#120e0a;border:1px solid #1e1a12;border-radius:12px;padding:14px;}
+.pain-x{color:#cc4444;font-size:18px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.pain-text{font-size:clamp(14px,3.8vw,15.5px);color:#d8d0bc;line-height:1.5;}
+.truth-block{background:linear-gradient(135deg,#1a1410,#221c14);border:2px solid #c8b477;border-radius:14px;padding:20px 16px;margin-bottom:24px;text-align:center;}
+.truth-pre{font-size:12px;color:#888;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:10px;}
+.truth-h{font-family:'Oswald',sans-serif;font-size:clamp(20px,5.5vw,26px);font-weight:700;color:#fff;line-height:1.4;margin-bottom:8px;}
+.truth-h em{color:#c8b477;font-style:italic;}
+.truth-sub{font-size:clamp(14px,3.8vw,15.5px);color:#aaa;line-height:1.6;margin-bottom:14px;}
+.concept-h{font-family:'Oswald',sans-serif;font-size:clamp(22px,6vw,28px);font-weight:700;color:#c8b477;line-height:1.3;margin-bottom:8px;}
+.concept-desc{font-size:clamp(14px,3.8vw,15.5px);color:#d8d0bc;line-height:1.6;margin-bottom:14px;}
+.warning{background:#1a0e00;border:1px solid #8a5500;border-radius:10px;padding:12px 14px;font-size:clamp(13px,3.5vw,14.5px);color:#ffaa44;line-height:1.6;text-align:left;}
+.warning strong{color:#ffd080;}
+.testi-img{width:100%;border-radius:12px;display:block;margin-bottom:12px;}
+.withouts{background:#0a0806;border:1px solid #1e1a12;border-radius:14px;padding:16px;margin-bottom:24px;}
+.withouts-h{font-family:'Oswald',sans-serif;font-size:clamp(16px,4.2vw,19px);font-weight:700;color:#fff;margin-bottom:12px;text-align:center;}
+.w-list{display:flex;flex-direction:column;gap:8px;}
+.w-item{display:flex;align-items:center;gap:10px;font-size:clamp(13.5px,3.6vw,15px);color:#d8d0bc;}
+.wi-check{color:#4caf50;font-weight:700;font-size:16px;flex-shrink:0;}
+.students-img{width:100%;border-radius:12px;display:block;margin-bottom:8px;}
+.students-note{font-size:13px;color:#c8b477;font-weight:600;text-align:center;margin-bottom:24px;}
+.disclaimer{max-width:500px;margin:20px auto 0;padding:24px 20px 40px;border-top:1px solid #1a1a1a;}
+.disclaimer p{font-size:11px;color:#3a3a3a;line-height:1.6;margin-bottom:8px;}
+.disclaimer a{color:#555;text-decoration:underline;}
+.disc-links{display:flex;gap:16px;margin-top:8px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-hook">
+    You buy books.<br>You start them.<br>
+    <span>Then life gets in the way.</span>
+  </div>
+  <p class="hero-sub">You're not lazy. You just never had your number.</p>
+  <a href="https://readwithsaud.com/q" class="btn-main btn-pulse">
+    👉 Find Your Book Finish Time™ — Free
+  </a>
+  <p class="btn-note">30 seconds · No sign-up · Completely free</p>
+  <div class="proof-bar">
+    <span class="pb-item">✓ 500+ readers know their number</span>
+    <span class="pb-dot"></span>
+    <span class="pb-item">Most were shocked</span>
+  </div>
+</div>
+
+<div class="w">
+
+  <div class="video-wrap" id="vidWrap" onclick="loadVid()">
+    <img src="https://vumbnail.com/1181886353.jpg" alt="Watch Saud explain" loading="eager">
+    <div class="video-overlay">
+      <div class="play-btn">&#9658;</div>
+      <span class="play-label">▶ Watch this first</span>
+    </div>
+  </div>
+  <p class="video-note">60 seconds — Saud explains exactly why your books stay unfinished</p>
+  <script>
+    function loadVid(){
+      var w=document.getElementById('vidWrap');
+      if(!w||w.dataset.p==='1')return;
+      w.dataset.p='1';w.style.cursor='default';w.onclick=null;
+      w.innerHTML='<iframe src="https://player.vimeo.com/video/1181886353?autoplay=1&playsinline=1&title=0&byline=0&portrait=0" frameborder="0" allow="autoplay;fullscreen;picture-in-picture" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:none;border-radius:12px;"></iframe>';
+    }
+  </script>
+
+  <img src="saud-banner.jpg" alt="Saud — Book Implementation Coach" class="coach-img" loading="lazy">
+  <p class="coach-note">Saud · Book Implementation Coach · 500+ professionals trained</p>
+
+  <div class="section-label">Sound familiar?</div>
+  <div class="pain-list">
+    <div class="pain-item"><span class="pain-x">✗</span><span class="pain-text">Started the book. Got busy. Never went back.</span></div>
+    <div class="pain-item"><span class="pain-x">✗</span><span class="pain-text">Feel quietly guilty every time you see that half-read pile.</span></div>
+    <div class="pain-item"><span class="pain-x">✗</span><span class="pain-text">Said "I'll read more" — but the pile just keeps growing.</span></div>
+  </div>
+
+  <div class="truth-block">
+    <div class="truth-pre">Here's what nobody tells you</div>
+    <div class="truth-h">You don't have a <em>reading</em> problem.<br>You have a <em>finishing</em> problem.</div>
+    <div class="truth-sub">And finishing is 100% fixable — once you know one number.</div>
+    <div class="concept-h">Your Book Finish Time™</div>
+    <div class="concept-desc">The exact minutes per day <strong style="color:#fff;">you specifically</strong> need to finish any book. Not a generic tip. Your personal number.</div>
+    <div class="warning">⚠️ <strong>Warning:</strong> Most people are shocked — not by how long it takes — but by what they discover about why they keep stopping.</div>
+  </div>
+
+  <div class="section-label" style="margin-bottom:12px;">What readers are saying</div>
+  <img src="testimonial-nishita.png" alt="Nishita Kharche testimonial" class="testi-img" loading="lazy">
+  <img src="testimonial-ajay.png" alt="Ajay Devnani testimonial" class="testi-img" loading="lazy">
+
+  <div class="withouts">
+    <div class="withouts-h">Find your number today —</div>
+    <div class="w-list">
+      <div class="w-item"><span class="wi-check">✓</span><span>Even if you only have 15 minutes a day</span></div>
+      <div class="w-item"><span class="wi-check">✓</span><span>Even if you've left 10 books unfinished</span></div>
+      <div class="w-item"><span class="wi-check">✓</span><span>Without changing your schedule</span></div>
+      <div class="w-item"><span class="wi-check">✓</span><span>Without buying more books</span></div>
+    </div>
+  </div>
+
+  <img src="students-books.png" alt="Readers who finished their books" class="students-img" loading="lazy">
+  <p class="students-note">500+ readers who finally finished their books ↑</p>
+
+  <p style="font-size:clamp(14px,3.8vw,16px);color:#aaa;text-align:center;margin-bottom:14px;">Ready to finally finish your next book?</p>
+  <a href="https://readwithsaud.com/q" class="btn-main btn-pulse">
+    👉 Find My Book Finish Time — Free →
+  </a>
+  <p class="btn-note" style="margin-bottom:0;">30 seconds · No sign-up · Completely free</p>
+
+</div>
+
+<div class="disclaimer">
+  <p>This site is not a part of the Facebook website or Facebook Inc. Additionally, This site is NOT endorsed by Facebook in any way. FACEBOOK is a trademark of FACEBOOK, Inc.</p>
+  <p>Results shown are not intended to serve as guarantees. Results will vary based on individual effort and circumstances.</p>
+  <p>© Copyright 2026 Read With Saud. All Rights Reserved.</p>
+  <div class="disc-links">
+    <a href="https://readwithsaud.com/term">Terms & Conditions</a>
+    <a href="https://readwithsaud.com/policy">Privacy Policy</a>
+  </div>
+</div>
+
+</body>
+</html>
