@@ -24,7 +24,7 @@ body{font-family:'Open Sans',sans-serif;background:#0e0d0b;color:#f0ede6;min-hei
 .pb-item{font-size:12px;color:#666;}
 .pb-dot{width:4px;height:4px;border-radius:50%;background:#333;}
 .video-wrap{position:relative;width:75%;margin:0 auto;padding-bottom:177.78%;border-radius:12px;overflow:hidden;background:#111;cursor:pointer;margin-bottom:6px;display:block;}
-.video-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.video-wrap img{display:block;}
 .video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(200,180,119,.7);}70%{box-shadow:0 0 0 18px rgba(200,180,119,0);}100%{box-shadow:0 0 0 0 rgba(200,180,119,0);}}
 .play-btn{width:64px;height:64px;border-radius:50%;background:#c8b477;color:#1a1a1a;font-size:26px;display:flex;align-items:center;justify-content:center;padding-left:5px;font-weight:700;animation:pulse 2s infinite;}
@@ -71,24 +71,24 @@ body{font-family:'Open Sans',sans-serif;background:#0e0d0b;color:#f0ede6;min-hei
   <a href="https://readwithsaud.com/q" class="btn-main btn-pulse">
     👉 Find Your Book Finish Time™ — Free
   </a>
-  <p class="btn-note">30 seconds · No sign-up · Completely free</p>
+  <p class="btn-note">30 seconds · Completely free</p>
   <div class="proof-bar">
-    <span class="pb-item">✓ 500+ readers know their number</span>
+    <span style="font-family:'Oswald',sans-serif;font-size:clamp(16px,4.5vw,20px);font-weight:700;color:#c8b477;">✓ 500+ readers know their number</span>
     <span class="pb-dot"></span>
-    <span class="pb-item">Most were shocked</span>
+    <span style="font-family:'Oswald',sans-serif;font-size:clamp(14px,3.8vw,17px);color:#fff;">Most were shocked</span>
   </div>
 </div>
 
 <div class="w">
 
   <div class="video-wrap" id="vidWrap" onclick="loadVid()">
-    <img src="https://vumbnail.com/1181886353.jpg" alt="Watch Saud explain" loading="eager">
+    <img src="https://vumbnail.com/1181886353.jpg" alt="Watch Saud explain" loading="eager" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;">
     <div class="video-overlay">
       <div class="play-btn">&#9658;</div>
       <span class="play-label">▶ Watch this first</span>
     </div>
   </div>
-  <p class="video-note">60 seconds — Saud explains exactly why your books stay unfinished</p>
+  <p class="video-note"></p>
   <script>
     function loadVid(){
       var w=document.getElementById('vidWrap');
@@ -99,7 +99,6 @@ body{font-family:'Open Sans',sans-serif;background:#0e0d0b;color:#f0ede6;min-hei
   </script>
 
   <img src="saud-banner.png" alt="Saud — Book Implementation Coach" class="coach-img" loading="lazy">
-  <p class="coach-note">Saud · Book Implementation Coach · 500+ professionals trained</p>
 
   <div class="section-label">Sound familiar?</div>
   <div class="pain-list">
